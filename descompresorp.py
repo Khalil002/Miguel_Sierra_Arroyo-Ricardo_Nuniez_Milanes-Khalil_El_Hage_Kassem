@@ -42,7 +42,6 @@ class HuffmanDecompressor:
 		rank = comm.Get_rank()
 		
 		if rank == 0:
-			st = time.time()
 			with open(self.input_path, 'rb') as input_file:
 				#Load the extension
 				n = int.from_bytes(input_file.read(4), byteorder=sys.byteorder)
@@ -69,13 +68,21 @@ class HuffmanDecompressor:
 				
 				decompressed_text = self.decode_text(encoded_text)
 				decompressed_binary = bytes.fromhex(decompressed_text)
-			
+				
+				length = len(decompressed_binary)
+				parts = length // size
+				for i in range(0, length, parts):
+					if i == length-1:
+						comm.send(decompressed_binary[i:], dest=i)
+					else:
+						comm.send(decompressed_binary[i:i+parts], dest=i)
+
+				for i in range (1, size):
+					comm.send(decompressed_binary, dest=i)
+
 			with open(self.output_path+output_file_extension, 'wb') as output_file:
 				output_file.write(decompressed_binary)
-			et = time.time()
-			ft = et-st
-			print(str(ft))
-					
+			
 		else:
 			Nada = None
 	
@@ -88,7 +95,11 @@ def main():
 		exit(0)
 	hd = HuffmanDecompressor(input_path, output_path)
 	#hd.load_reverse_mapping()
+	st = time.time()
 	hd.decompress()
+	et = time.time()
+	ft = et-st
+	print(ft)
 
 
 if __name__ == "__main__":
