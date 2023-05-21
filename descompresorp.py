@@ -42,7 +42,7 @@ class HuffmanDecompressor:
 		rank = comm.Get_rank()
 		
 		if rank == 0:
-			et = time.time()
+			st = time.time()
 			with open(self.input_path, 'rb') as input_file:
 				#Load the extension
 				n = int.from_bytes(input_file.read(4), byteorder=sys.byteorder)
@@ -72,8 +72,8 @@ class HuffmanDecompressor:
 			
 			with open(self.output_path+output_file_extension, 'wb') as output_file:
 				output_file.write(decompressed_binary)
+			et = time.time()
 			ft = et-st
-			st = time.time()
 			print(str(ft))
 					
 		else:
