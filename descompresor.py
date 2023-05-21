@@ -41,7 +41,7 @@ class HuffmanDecompressor:
 
 		with open(self.input_path, 'rb') as input_file, open(self.output_path, 'wb') as output_file:
 			
-			#Load the reverse_mapping
+			#Load the extension
 			n = int.from_bytes(input_file.read(4), byteorder=sys.byteorder)
 			output_file_extension_as_bytes = input_file.read(n)
 			output_file_extension = output_file_extension_as_bytes.decode()
