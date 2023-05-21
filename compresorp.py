@@ -3,7 +3,29 @@ import sys
 import time
 import heapq
 import pickle
+import math
 from mpi4py import MPI
+
+def dividrTexto(numProcesos, lenData):
+  caracteres=[]
+  result = float(lenData)/numProcesos
+  decimalPart = result - math.floor(result)
+  procesosMayorCaracteres = int(decimalPart*numProcesos)
+  for i in range (procesosMayorCaracteres):
+    caracteres.append(math.ceil(result))
+  for j in range (i+1,numProcesos):
+    caracteres.append(math.floor(result))
+  return caracteres
+
+def combinar_freq_table(freq_tables):
+    resultado = {}
+    for freq_table in freq_tables:
+        for clave, valor in freq_table.items():
+            if clave in resultado:
+                resultado[clave] += valor
+            else:
+                resultado[clave] = valor
+    return resultado
 
 class HuffmanCompressor:
 	def __init__(self, input_path, output_path):
@@ -114,8 +136,28 @@ class HuffmanCompressor:
 		rank = comm.Get_rank()
 
 		if rank == 0:
+			comm = MPI.COMM_WORLD
+			rank = comm.Get_rank()
+			size = comm.Get_size()
+			with open(self.input_path, 'rb') as input_file, open(self.output_path, 'wb') as output_file:
+				data_bytes = input_file.read()
+				data_hex = data_bytes.hex()
+				data = [data_hex[i:i+2] for i in range(0, len(data_hex), 2)]
+
+				caracteres = dividrTexto(size-1,len(data))
+				for i in range (1, size):
+					comm.send(caracteres[i-1], dest=i)
+
+				freq_table_array = []
+				for i in range (1, size):
+					dataReceived = comm.recv(source=MPI.ANY_SOURCE)
+					freq_table_array.append(dataReceived)
+				freq_table = combinar_freq_table(freq_table_array)
 			
 		else:
+			dataReceived=comm.recv(source=0)
+			freq_table = self.create_freq_table(dataReceived)
+			comm.send(freq_table, dest=0)
 
 		with open(self.input_path, 'rb') as input_file, open(self.output_path, 'wb') as output_file:
 			data_bytes = input_file.read()
