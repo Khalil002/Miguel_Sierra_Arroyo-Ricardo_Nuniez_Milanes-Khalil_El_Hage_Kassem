@@ -136,9 +136,6 @@ class HuffmanCompressor:
 		rank = comm.Get_rank()
 
 		if rank == 0:
-			comm = MPI.COMM_WORLD
-			rank = comm.Get_rank()
-			size = comm.Get_size()
 			with open(self.input_path, 'rb') as input_file, open(self.output_path, 'wb') as output_file:
 				data_bytes = input_file.read()
 				data_hex = data_bytes.hex()

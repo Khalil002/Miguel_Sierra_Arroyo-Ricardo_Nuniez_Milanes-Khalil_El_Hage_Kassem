@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import pickle
+from mpi4py import MPI
 
 class HuffmanDecompressor:
 
