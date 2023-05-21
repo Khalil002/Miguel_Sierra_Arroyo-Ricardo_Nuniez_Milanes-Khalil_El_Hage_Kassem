@@ -30,6 +30,7 @@ class HuffmanCompressor:
 				return False
 			return self.freq == other.freq
 
+	#crea la tabla de frecuencia dada la lista de símbolos hexadeciamles 
 	def create_freq_table(self, data):
 		freq_table = {}
 		for symbol in data:
@@ -38,11 +39,14 @@ class HuffmanCompressor:
 			freq_table[symbol] += 1
 		return freq_table
 
+	#toma la tabla de frecuencia y crea el montículo (símbolo con su frecuencia)	
+	#los nodos se ordenan automáticamente en función de sus frecuencias
 	def create_heap(self, freq_table):
 		for key in freq_table:
 			node = self.HeapNode(key, freq_table[key])
 			heapq.heappush(self.heap, node)
 
+	#fusiona repetidamente los nodos de menor frecuencia en el montículo hasta que solo quede un nodo
 	def merge_nodes(self):
 		while(len(self.heap)>1):
 			node1 = heapq.heappop(self.heap)
@@ -54,6 +58,8 @@ class HuffmanCompressor:
 
 			heapq.heappush(self.heap, merged)
 
+	#realiza un recorrido DFS en el árbol para asignar códigos binarios a cada símbolo
+	# los códigos se generan concatenando los movimientos, 0 hacia la izquierda y 1 hacia la derecha	
 	def create_codes_helper(self, root, current_code):
 		if(root == None):
 			return
@@ -66,17 +72,21 @@ class HuffmanCompressor:
 		self.create_codes_helper(root.left, current_code + "0")
 		self.create_codes_helper(root.right, current_code + "1")
 
+	#invoca create_codes_helper para generar los códigos para cada símbolo en el árbol
 	def create_codes(self):
 		root = heapq.heappop(self.heap)
 		current_code = ""
 		self.create_codes_helper(root, current_code)
 
+	#recibe una lista de símbolos y devuelve el texto codificado obtenido al concatenar los códigos
+	#correspondientes a cada símbolo.
 	def get_encoded_text(self, text):
 		encoded_text = ""
 		for character in text:
 			encoded_text += self.codes[character]
 		return encoded_text
 
+	#agrega un relleno al texto codificado para que su longitud sea múltiplo de 8 (un byte completo)
 	def pad_encoded_text(self, encoded_text):
 		extra_padding = 8 - len(encoded_text) % 8
 		for i in range(extra_padding):
@@ -86,6 +96,7 @@ class HuffmanCompressor:
 		encoded_text = padded_info + encoded_text
 		return encoded_text
 
+	#toma el texto codificado con el relleno y lo convierte en una secuencia de bytes
 	def get_byte_array(self, padded_encoded_text):
 		if(len(padded_encoded_text) % 8 != 0):
 			print("Encoded text not padded properly")
