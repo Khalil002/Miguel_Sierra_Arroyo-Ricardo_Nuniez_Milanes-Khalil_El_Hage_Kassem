@@ -74,7 +74,7 @@ class HuffmanDecompressor:
 				output_file.write(decompressed_binary)
 			ft = et-st
 			st = time.time()
-			print("Tiempo de descompresión: "+str(ft)+" segundos")
+			print(str(ft))
 					
 		else:
 			Nada = None

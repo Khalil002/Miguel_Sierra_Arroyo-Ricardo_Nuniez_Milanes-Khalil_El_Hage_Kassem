@@ -88,7 +88,7 @@ def main():
 	hd.decompress()
 	et = time.time()
 	ft = et-st
-	print("Tiempo de descompresión: "+str(ft)+" segundos")
+	print(str(ft))
 
 
 if __name__ == "__main__":
