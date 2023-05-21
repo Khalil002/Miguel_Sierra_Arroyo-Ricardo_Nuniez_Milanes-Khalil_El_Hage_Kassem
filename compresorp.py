@@ -195,7 +195,7 @@ class HuffmanCompressor:
 def main():
 	input_path = sys.argv[1]
 	input_filename, input_file_extension = os.path.splitext(input_path)
-	output_path = "comprimido.elmejorprofesor"
+	output_path = "comprimidop.elmejorprofesor"
 	if(os.path.isfile(input_path) == False):
 		print(input_path+" does not exist")
 		exit(0)

@@ -81,7 +81,7 @@ class HuffmanDecompressor:
 	
 def main():
 	input_path = sys.argv[1]
-	output_path = "descomprimido-elmejorprofesor"
+	output_path = "descomprimidop-elmejorprofesor"
 
 	if(os.path.isfile(input_path) == False):
 		print(input_path+" does not exist")
