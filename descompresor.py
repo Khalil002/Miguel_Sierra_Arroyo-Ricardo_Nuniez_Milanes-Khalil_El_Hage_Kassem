@@ -75,9 +75,9 @@ class HuffmanDecompressor:
 	#		self.reverse_mapping = pickle.load(reverse_mapping_file)
 	
 def main():
-	input_path = "comprimido.elmejorprofesor"
+	
+	input_path = sys.argv[1]
 	output_path = "descomprimido-elmejorprofesor"
-
 	if(os.path.isfile(input_path) == False):
 		print(input_path+" does not exist")
 		exit(0)

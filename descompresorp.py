@@ -42,6 +42,7 @@ class HuffmanDecompressor:
 		rank = comm.Get_rank()
 		
 		if rank == 0:
+			et = time.time()
 			with open(self.input_path, 'rb') as input_file:
 				#Load the extension
 				n = int.from_bytes(input_file.read(4), byteorder=sys.byteorder)
@@ -54,7 +55,6 @@ class HuffmanDecompressor:
 				self.reverse_mapping = pickle.loads(reverse_mapping_bytes)
 
 				bit_string = ""
-
 				#Load the compressed file
 				byte = input_file.read(1)
 				while(len(byte) > 0):
@@ -63,27 +63,24 @@ class HuffmanDecompressor:
 					bit_string += bits
 					byte = input_file.read(1)
 
+				print(bit_string)
 				encoded_text = self.remove_padding(bit_string)
-
+				print(encoded_text)
 				
 				decompressed_text = self.decode_text(encoded_text)
 				decompressed_binary = bytes.fromhex(decompressed_text)
 			
 			with open(self.output_path+output_file_extension, 'wb') as output_file:
 				output_file.write(decompressed_binary)
-			
+			ft = et-st
+			st = time.time()
+			print("Tiempo de descompresión: "+str(ft)+" segundos")
+					
 		else:
-			dataReceived=comm.recv(source=0)
-			freq_table = self.create_freq_table(dataReceived)
-			comm.send(freq_table, dest=0)
-
-	
-	#def load_reverse_mapping(self):
-	#	with open('reverse_mapping', 'rb') as reverse_mapping_file:
-	#		self.reverse_mapping = pickle.load(reverse_mapping_file)
+			Nada = None
 	
 def main():
-	input_path = "comprimido.elmejorprofesor"
+	input_path = sys.argv[1]
 	output_path = "descomprimido-elmejorprofesor"
 
 	if(os.path.isfile(input_path) == False):
@@ -91,12 +88,7 @@ def main():
 		exit(0)
 	hd = HuffmanDecompressor(input_path, output_path)
 	#hd.load_reverse_mapping()
-
-	st = time.time()
 	hd.decompress()
-	et = time.time()
-	ft = et-st
-	print("Tiempo de descompresión: "+str(ft)+" segundos")
 
 
 if __name__ == "__main__":
