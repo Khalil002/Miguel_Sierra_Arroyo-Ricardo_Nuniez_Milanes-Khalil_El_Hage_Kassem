@@ -7,15 +7,15 @@ import math
 from mpi4py import MPI
 
 def dividrTexto(numProcesos, lenData):
-  caracteres=[]
-  result = float(lenData)/numProcesos
-  decimalPart = result - math.floor(result)
-  procesosMayorCaracteres = int(decimalPart*numProcesos)
-  for i in range (procesosMayorCaracteres):
-    caracteres.append(math.ceil(result))
-  for j in range (i+1,numProcesos):
-    caracteres.append(math.floor(result))
-  return caracteres
+	caracteres=[]
+	result = float(lenData)/numProcesos
+	decimalPart = result - math.floor(result)
+	procesosMayorCaracteres = int(decimalPart*numProcesos)
+	for i in range (procesosMayorCaracteres):
+		caracteres.append(math.ceil(result))
+	for j in range (i+1,numProcesos):	
+		caracteres.append(math.floor(result))
+	return caracteres
 
 def combinar_freq_table(freq_tables):
     resultado = {}
