@@ -81,10 +81,13 @@ class HuffmanDecompressor:
 					comm.send(decompressed_binary, dest=i)
 
 			with open(self.output_path+output_file_extension, 'wb') as output_file:
-				output_file.write(decompressed_binary)
+				for i in range(1, size):
+					dataReceived=comm.recv(source=i)
+					output_file.write(dataReceived)
 			
 		else:
-			Nada = None
+			dataReceived=comm.recv(source=0)
+			comm.send(dataReceived, dest=0)
 	
 def main():
 	input_path = sys.argv[1]
