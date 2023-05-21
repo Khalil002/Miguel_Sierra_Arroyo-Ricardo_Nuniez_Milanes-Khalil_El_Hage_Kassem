@@ -150,48 +150,43 @@ class HuffmanCompressor:
 					dataReceived = comm.recv(source=MPI.ANY_SOURCE)
 					freq_table_array.append(dataReceived)
 				freq_table = combinar_freq_table(freq_table_array)
+    
+				self.create_heap(freq_table)
+				self.merge_nodes()
+				self.create_codes()
+
+				encoded_text = self.get_encoded_text(data)
+				padded_encoded_text = self.pad_encoded_text(encoded_text)
+
+				b = self.get_byte_array(padded_encoded_text)
+				b2 = pickle.dumps(self.reverse_mapping)
+				b3 = len(b2)
+				b4 = b3.to_bytes(4, sys.byteorder)
+				b5 = str.encode(input_file_extension)
+				b6 = len(b5)
+				b7 = b6.to_bytes(4, sys.byteorder)
+				
+				#writes the file extension length
+				output_file.write(b7)
+
+				#writes the file extension
+				output_file.write(b5)
+
+				#writes the pickled reverse_mapping length
+				output_file.write(b4)
+
+				#writes the pickled reverse_mapping
+				output_file.write(b2)
+
+				#writes the compressed file
+				output_file.write(bytes(b))
 			
 		else:
 			dataReceived=comm.recv(source=0)
 			freq_table = self.create_freq_table(dataReceived)
 			comm.send(freq_table, dest=0)
 
-		with open(self.input_path, 'rb') as input_file, open(self.output_path, 'wb') as output_file:
-			data_bytes = input_file.read()
-			data_hex = data_bytes.hex()
 			
-			data = [data_hex[i:i+2] for i in range(0, len(data_hex), 2)]
-			
-			freq_table = self.create_freq_table(data)
-			self.create_heap(freq_table)
-			self.merge_nodes()
-			self.create_codes()
-
-			encoded_text = self.get_encoded_text(data)
-			padded_encoded_text = self.pad_encoded_text(encoded_text)
-
-			b = self.get_byte_array(padded_encoded_text)
-			b2 = pickle.dumps(self.reverse_mapping)
-			b3 = len(b2)
-			b4 = b3.to_bytes(4, sys.byteorder)
-			b5 = str.encode(input_file_extension)
-			b6 = len(b5)
-			b7 = b6.to_bytes(4, sys.byteorder)
-			
-			#writes the file extension length
-			output_file.write(b7)
-
-			#writes the file extension
-			output_file.write(b5)
-
-			#writes the pickled reverse_mapping length
-			output_file.write(b4)
-
-			#writes the pickled reverse_mapping
-			output_file.write(b2)
-
-			#writes the compressed file
-			output_file.write(bytes(b))
 	
 	#def save_reverse_mapping(self):
 	#	with open('reverse_mapping', 'wb') as reverse_mapping_file:
