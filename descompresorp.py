@@ -37,39 +37,46 @@ class HuffmanDecompressor:
 
 		output_file_extension = ""
 		decompressed_binary = ""
-
+		comm = MPI.COMM_WORLD
+		size = comm.Get_size()
+		rank = comm.Get_rank()
 		
+		if rank == 0:
+			with open(self.input_path, 'rb') as input_file:
+				#Load the extension
+				n = int.from_bytes(input_file.read(4), byteorder=sys.byteorder)
+				output_file_extension_as_bytes = input_file.read(n)
+				output_file_extension = output_file_extension_as_bytes.decode()
 
-		with open(self.input_path, 'rb') as input_file, open(self.output_path, 'wb') as output_file:
-			
-			#Load the reverse_mapping
-			n = int.from_bytes(input_file.read(4), byteorder=sys.byteorder)
-			output_file_extension_as_bytes = input_file.read(n)
-			output_file_extension = output_file_extension_as_bytes.decode()
+				#Load the reverse_mapping
+				n = int.from_bytes(input_file.read(4), byteorder=sys.byteorder)
+				reverse_mapping_bytes = input_file.read(n)
+				self.reverse_mapping = pickle.loads(reverse_mapping_bytes)
 
-			#Load the reverse_mapping
-			n = int.from_bytes(input_file.read(4), byteorder=sys.byteorder)
-			reverse_mapping_bytes = input_file.read(n)
-			self.reverse_mapping = pickle.loads(reverse_mapping_bytes)
+				bit_string = ""
 
-			bit_string = ""
-
-			#Load the compressed file
-			byte = input_file.read(1)
-			while(len(byte) > 0):
-				byte = ord(byte)
-				bits = bin(byte)[2:].rjust(8, '0')
-				bit_string += bits
+				#Load the compressed file
 				byte = input_file.read(1)
+				while(len(byte) > 0):
+					byte = ord(byte)
+					bits = bin(byte)[2:].rjust(8, '0')
+					bit_string += bits
+					byte = input_file.read(1)
 
-			encoded_text = self.remove_padding(bit_string)
+				encoded_text = self.remove_padding(bit_string)
 
+				
+				decompressed_text = self.decode_text(encoded_text)
+				decompressed_binary = bytes.fromhex(decompressed_text)
 			
-			decompressed_text = self.decode_text(encoded_text)
-			decompressed_binary = bytes.fromhex(decompressed_text)
-		
-		with open(self.output_path+output_file_extension, 'wb') as output_file:
-			output_file.write(decompressed_binary)
+			with open(self.output_path+output_file_extension, 'wb') as output_file:
+				output_file.write(decompressed_binary)
+			
+		else:
+			dataReceived=comm.recv(source=0)
+			freq_table = self.create_freq_table(dataReceived)
+			comm.send(freq_table, dest=0)
+
 	
 	#def load_reverse_mapping(self):
 	#	with open('reverse_mapping', 'rb') as reverse_mapping_file:
