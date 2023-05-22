@@ -1,0 +1,15 @@
+text1.txt
+sanity check ok 0
+ct 1.4248428344726562 ctp3 1.7810282707214355 ctp10 1.3929181098937988 rate 57 ratep3 57 ratep3 57 diff 0 diffp3 0 diffp10 0
+text2.txt
+sanity check ok 0
+ct 3.0275301933288574 ctp3 4.013826131820679 ctp10 3.150502920150757 rate 56 ratep3 56 ratep3 56 diff 0 diffp3 0 diffp10 0
+text3.txt
+sanity check ok 0
+ct 16.771273851394653 ctp3 28.233259916305542 ctp10 21.325750827789307 rate 58 ratep3 58 ratep3 58 diff 0 diffp3 0 diffp10 0
+text4.txt
+sanity check ok 0
+ct 1.7098541259765625 ctp3 2.3284289836883545 ctp10 1.699997901916504 rate 59 ratep3 59 ratep3 59 diff 0 diffp3 0 diffp10 0
+text5.txt
+sanity check ok 0
+ct 1.5287859439849854 ctp3 2.0536439418792725 ctp10 1.6022331714630127 rate 57 ratep3 57 ratep3 57 diff 0 diffp3 0 diffp10 0
