@@ -161,13 +161,13 @@ if rank == 0:
 		data_bytes = input_file.read()
 		data_hex = data_bytes.hex()
 		data = [data_hex[i:i+2] for i in range(0, len(data_hex), 2)]
-		chunckSize = ceil(len(data)/size)
-		
+		chunckSize = ceil(len(data)/(size-1))
 		for i in range(1, size):
 			if(i == size-1):
-				comm.send(data[chunckSize*(i-1):chunckSize*i], dest=i)
+				comm.send(data[chunckSize*(i-1):len(data)], dest=i)
 			else:
-				comm.send(data[chunckSize*(i-1):len(data)-1], dest=i)
+				comm.send(data[chunckSize*(i-1):chunckSize*i], dest=i)
+				
 else: 
 	data = comm.recv(source=0)
 	freq_table = create_freq_table(data)
@@ -229,5 +229,5 @@ if rank == 0:
 		output_file.write(bytes(b))
 	et = time.time()
 	ft = et-st
-	print("Tiempo de compresión: "+str(ft)+" segundos")
+	print(ft)
 	

@@ -39,9 +39,9 @@ class HuffmanDecompressor:
 
 		
 
-		with open(self.input_path, 'rb') as input_file, open(self.output_path, 'wb') as output_file:
+		with open(self.input_path, 'rb') as input_file:
 			
-			#Load the extension
+			#Load the reverse_mapping
 			n = int.from_bytes(input_file.read(4), byteorder=sys.byteorder)
 			output_file_extension_as_bytes = input_file.read(n)
 			output_file_extension = output_file_extension_as_bytes.decode()
@@ -75,20 +75,21 @@ class HuffmanDecompressor:
 	#		self.reverse_mapping = pickle.load(reverse_mapping_file)
 	
 def main():
-	
 	input_path = sys.argv[1]
 	output_path = "descomprimido-elmejorprofesor"
+
 	if(os.path.isfile(input_path) == False):
 		print(input_path+" does not exist")
 		exit(0)
 	hd = HuffmanDecompressor(input_path, output_path)
 	#hd.load_reverse_mapping()
 
+
 	st = time.time()
 	hd.decompress()
 	et = time.time()
 	ft = et-st
-	print(str(ft))
+	print(ft)
 
 
 if __name__ == "__main__":

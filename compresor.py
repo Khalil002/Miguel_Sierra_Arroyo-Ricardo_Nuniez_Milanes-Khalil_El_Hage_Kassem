@@ -151,7 +151,7 @@ def main():
 	hc.compress(input_file_extension)
 	et = time.time()
 	ft = et-st
-	print("Tiempo de compresión: "+str(ft)+" segundos")
+	print(ft)
 
 	#hc.save_reverse_mapping()
 
