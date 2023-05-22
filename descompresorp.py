@@ -62,9 +62,7 @@ class HuffmanDecompressor:
 					bit_string += bits
 					byte = input_file.read(1)
 
-				print(bit_string)
 				encoded_text = self.remove_padding(bit_string)
-				print(encoded_text)
 				
 				decompressed_text = self.decode_text(encoded_text)
 				decompressed_binary = bytes.fromhex(decompressed_text)
@@ -72,12 +70,13 @@ class HuffmanDecompressor:
 				length = len(decompressed_binary)
 				parts = round(length / size)
 				j = 0
-				for i in range(0, length, parts):
+				for i in range(1, length, parts):
+					print(j)
 					if j == size-1:
-						comm.send(decompressed_binary[i:], dest=j+1)
+						comm.send(decompressed_binary[i:], dest=j)
 						break
 					else:
-						comm.send(decompressed_binary[i:i+parts], dest=j+1)
+						comm.send(decompressed_binary[i:i+parts], dest=j)
 						j += 1
 
 			with open(self.output_path+output_file_extension, 'wb') as output_file:
