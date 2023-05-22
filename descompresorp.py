@@ -70,13 +70,15 @@ class HuffmanDecompressor:
 				decompressed_binary = bytes.fromhex(decompressed_text)
 				
 				length = len(decompressed_binary)
-				parts = length // size
+				parts = round(length / size)
 				j = 0
 				for i in range(0, length, parts):
 					if j == size-1:
 						comm.send(decompressed_binary[i:], dest=j+1)
+						break
 					else:
 						comm.send(decompressed_binary[i:i+parts], dest=j+1)
+						j += 1
 
 				for i in range (1, size):
 					comm.send(decompressed_binary, dest=i)
