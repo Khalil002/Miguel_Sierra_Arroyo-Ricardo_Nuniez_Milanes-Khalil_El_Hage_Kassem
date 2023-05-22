@@ -80,9 +80,6 @@ class HuffmanDecompressor:
 						comm.send(decompressed_binary[i:i+parts], dest=j+1)
 						j += 1
 
-				for i in range (1, size):
-					comm.send(decompressed_binary, dest=i)
-
 			with open(self.output_path+output_file_extension, 'wb') as output_file:
 				for i in range(1, size):
 					dataReceived=comm.recv(source=i)
