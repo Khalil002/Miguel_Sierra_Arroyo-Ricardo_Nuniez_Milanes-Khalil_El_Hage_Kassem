@@ -71,11 +71,12 @@ class HuffmanDecompressor:
 				
 				length = len(decompressed_binary)
 				parts = length // size
+				j = 0
 				for i in range(0, length, parts):
-					if i == length-1:
-						comm.send(decompressed_binary[i:], dest=i)
+					if j == size-1:
+						comm.send(decompressed_binary[i:], dest=j+1)
 					else:
-						comm.send(decompressed_binary[i:i+parts], dest=i)
+						comm.send(decompressed_binary[i:i+parts], dest=j+1)
 
 				for i in range (1, size):
 					comm.send(decompressed_binary, dest=i)
