@@ -1,3 +1,4 @@
+from math import ceil
 import os
 import sys
 import time
@@ -67,27 +68,22 @@ class HuffmanDecompressor:
 				decompressed_text = self.decode_text(encoded_text)
 				decompressed_binary = bytes.fromhex(decompressed_text)
 				
-				length = len(decompressed_binary)
-				parts = round(length / size)
-				j = 0
-				for i in range(1, length, parts):
-					print(j)
-					if j == size-1:
-						comm.send(decompressed_binary[i:], dest=j)
-						break
-					else:
-						comm.send(decompressed_binary[i:i+parts], dest=j)
-						j += 1
-
-			with open(self.output_path+output_file_extension, 'wb') as output_file:
+				chunckSize = ceil(len(decompressed_binary)/(size-1))
 				for i in range(1, size):
-					dataReceived=comm.recv(source=i)
-					output_file.write(dataReceived)
-			
+					if(i == size-1):
+						comm.send(decompressed_binary[chunckSize*(i-1):len(decompressed_binary)], dest=i)
+					else:
+						comm.send(decompressed_binary[chunckSize*(i-1):chunckSize*i], dest=i)
 		else:
 			dataReceived=comm.recv(source=0)
 			comm.send(dataReceived, dest=0)
 	
+		if rank == 0:
+			with open(self.output_path+output_file_extension, 'wb') as output_file:
+				writeVariable = comm.gather(dataReceived, root=0)
+				for i in range(writeVariable):
+					dataReceived=comm.recv(source=i)
+					output_file.write(dataReceived)
 def main():
 	input_path = sys.argv[1]
 	output_path = "descomprimidop-elmejorprofesor"
