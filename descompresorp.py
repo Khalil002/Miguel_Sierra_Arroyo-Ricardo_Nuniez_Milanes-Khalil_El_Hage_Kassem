@@ -44,8 +44,8 @@ class HuffmanDecompressor:
 		dataReceived = None
 
 		if rank == 0:
+			st = time.time()
 			with open(self.input_path, 'rb') as input_file:
-				print("stage 1, rank", rank)
 				#Load the extension
 				n = int.from_bytes(input_file.read(4), byteorder=sys.byteorder)
 				output_file_extension_as_bytes = input_file.read(n)
@@ -57,7 +57,6 @@ class HuffmanDecompressor:
 				self.reverse_mapping = pickle.loads(reverse_mapping_bytes)
 
 				bit_string = ""
-				print("stage 2, rank", rank)
 				#Load the compressed file
 				byte = input_file.read(1)
 				while(len(byte) > 0):
@@ -66,14 +65,12 @@ class HuffmanDecompressor:
 					bit_string += bits
 					byte = input_file.read(1)
 
-				print("stage 3, rank", rank)
 				#Remove padding and decode the text 
 				encoded_text = self.remove_padding(bit_string)
 				
 				decompressed_text = self.decode_text(encoded_text)
 				decompressed_binary = bytes.fromhex(decompressed_text)
 				
-				print("stage 4, rank", rank)
 				#Send the data to the other processes
 				chunckSize = ceil(len(decompressed_binary)/(size-1))
 				for i in range(1, size):
@@ -82,22 +79,19 @@ class HuffmanDecompressor:
 					else:
 						comm.send(decompressed_binary[chunckSize*(i-1):chunckSize*i], dest=i)
 		else:
-			print("stage 5, rank", rank)
 			#Receive the data from the master process and send it back
 			dataReceived=comm.recv(source=0)
 
-		if rank == 0:
-			print("hellp")
 		writeVariable = comm.gather(dataReceived, root=0)
 		if rank == 0:
-			print("stage 6, rank", rank) 
 			#Write the output file
 			
-			print("stinky") 
 			with open(self.output_path+output_file_extension, 'wb') as output_file:
 				for i in range(1,size):
-					print("stinky winky , rank ", i) 
 					output_file.write(writeVariable[i])
+			et = time.time()
+			ft = et-st
+			print(ft)
 def main():
 	input_path = sys.argv[1]
 	output_path = "descomprimidop-elmejorprofesor"
@@ -107,11 +101,8 @@ def main():
 		exit(0)
 	hd = HuffmanDecompressor(input_path, output_path)
 	#hd.load_reverse_mapping()
-	st = time.time()
 	hd.decompress()
-	et = time.time()
-	ft = et-st
-	print(ft)
+	
 
 
 if __name__ == "__main__":
