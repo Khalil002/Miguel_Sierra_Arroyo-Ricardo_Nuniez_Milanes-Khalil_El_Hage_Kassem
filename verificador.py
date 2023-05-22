@@ -4,7 +4,8 @@ import filecmp
 
 def main():
     f1 = sys.argv[1]
-    f2 = sys.argv[2]
+    input_filename, input_file_extension = os.path.splitext(f1)
+    f2 = "descomprimido-elmejorprofesor"+input_file_extension
     
     if os.path.exists(f1) == False:
         print(f1+" does not exist")
