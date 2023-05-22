@@ -1,0 +1,2 @@
+bash run.sh Parallel_Huffman_Coding 1
+bash runp.sh Parallel_Huffman_Coding 1

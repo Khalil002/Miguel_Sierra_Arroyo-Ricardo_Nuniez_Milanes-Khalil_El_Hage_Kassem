@@ -85,16 +85,19 @@ class HuffmanDecompressor:
 			print("stage 5, rank", rank)
 			#Receive the data from the master process and send it back
 			dataReceived=comm.recv(source=0)
-			comm.send(dataReceived, dest=0)
-	
+
 		if rank == 0:
-			print("stage 6, rank", rank)
+			print("hellp")
+		writeVariable = comm.gather(dataReceived, root=0)
+		if rank == 0:
+			print("stage 6, rank", rank) 
 			#Write the output file
+			
+			print("stinky") 
 			with open(self.output_path+output_file_extension, 'wb') as output_file:
-				writeVariable = comm.gather(dataReceived, root=0)
-				for i in range(writeVariable):
-					dataReceived=comm.recv(source=i)
-					output_file.write(dataReceived)
+				for i in range(1,size):
+					print("stinky winky , rank ", i) 
+					output_file.write(writeVariable[i])
 def main():
 	input_path = sys.argv[1]
 	output_path = "descomprimidop-elmejorprofesor"
