@@ -3,11 +3,10 @@ import sys
 import time
 import heapq
 import pickle
-import numpy as np
 from mpi4py import MPI
 from math import ceil
 
-class HuffmanCoding:
+class HuffmanCompressor:
 	def __init__(self):
 		self.heap = []
 		self.codes = {}
@@ -29,6 +28,14 @@ class HuffmanCoding:
 			if(other == None):
 				return False
 			return self.freq == other.freq
+
+	def create_freq_table(self, data):
+		freq_table = {}
+		for symbol in data:
+			if not symbol in freq_table:
+				freq_table[symbol] = 0
+			freq_table[symbol] += 1
+		return freq_table
 
 	def create_heap(self, freq_table):
 		for key in freq_table:
@@ -88,22 +95,23 @@ class HuffmanCoding:
 			byte = padded_encoded_text[i:i+8]
 			b.append(int(byte, 2))
 		return b
-	
-	def create_reverse_mapping(self, freq_table):
 
+	def create_huffman_coding(self, data):
+		freq_table = self.create_freq_table(data)
 		self.create_heap(freq_table)
 		self.merge_nodes()
 		self.create_codes()
+		return self.reverse_mapping, self.codes
 
-		return self.codes, self.reverse_mapping
-
-def create_freq_table(data):
-		freq_table = {}
-		for symbol in data:
-			if not symbol in freq_table:
-				freq_table[symbol] = 0
-			freq_table[symbol] += 1
-		return freq_table
+def divide_data(data, size):
+    parts = []
+    chunckSize = ceil(len(data)/(size-1))
+    for i in range(0, size):
+        if(i == size-1):
+            parts.append(data[chunckSize*(i-1):len(data)])
+        else:
+            parts.append(data[chunckSize*(i-1):chunckSize*i])
+    return parts
 
 def get_encoded_text(text, codes):
 	encoded_text = ""
@@ -111,97 +119,53 @@ def get_encoded_text(text, codes):
 		encoded_text += codes[character]
 	return encoded_text
 
-#Get input & output paths
-input_path = sys.argv[1]
-input_filename, input_file_extension = os.path.splitext(input_path)
-output_path = "comprimidop.elmejorprofesor"
-if(os.path.isfile(input_path) == False):
-	print(input_path+" does not exist")
-	exit(0)
+def main():
 	
-#Get data to all porcesses
-comm = MPI.COMM_WORLD
-size = comm.Get_size()
-rank = comm.Get_rank()
-
-#print("stage 1, rank", rank)
-#Calculates frequency table
-data = None
-freq_table = None
-st = None
-if rank == 0:
-	st = time.time()
-	with open(input_path, 'rb') as input_file:
-		data_bytes = input_file.read()
-		data_hex = data_bytes.hex()
-		data = [data_hex[i:i+2] for i in range(0, len(data_hex), 2)]
-		chunckSize = ceil(len(data)/(size-1))
-		for i in range(1, size):
-			if(i == size-1):
-				comm.send(data[chunckSize*(i-1):len(data)], dest=i)
-			else:
-				comm.send(data[chunckSize*(i-1):chunckSize*i], dest=i)
-				
-else: 
-	data = comm.recv(source=0)
-	freq_table = create_freq_table(data)
-	comm.send(freq_table, dest=0)
-
-#print("stage 2, rank", rank)
-#Merge frequency tables
-freq_tables = comm.gather(freq_table, root=0)
-codes = None
-reverse_mapping = None
-if rank == 0:
-	merged_freq_tables = {}
-	for i in range(1, size):
-		for key, value in freq_tables[i].items():
-			if not key in merged_freq_tables:
-				merged_freq_tables[key] = 0
-			merged_freq_tables[key] += value
+	comm = MPI.COMM_WORLD
+	size = comm.Get_size()
+	rank = comm.Get_rank()
+	if rank == 0:
+		st = time.time()
+		input_path = sys.argv[1]
+		input_filename, input_file_extension = os.path.splitext(input_path)
+		output_path = "comprimidop.elmejorprofesor"
+		with open(input_path, 'rb') as input_file:
+			data_bytes = input_file.read()
+			data_hex = data_bytes.hex()
+			data = [data_hex[i:i+2] for i in range(0, len(data_hex), 2)]
+			hc = HuffmanCompressor()
+			sent_data = divide_data(data, size)	
+			reverse_mapping, codes = hc.create_huffman_coding(data)
+	else:
+		sent_data = None
+		codes = None
+		
+	codes = comm.bcast(codes, root=0)
+	recieved_data = comm.scatter(sent_data, root=0)
+	encoded_text = get_encoded_text(recieved_data, codes)
+	encoded_text_list = comm.gather(encoded_text, root=0)
 	
-	hc = HuffmanCoding()		
-	codes, reverse_mapping = hc.create_reverse_mapping(merged_freq_tables)
-
-#print("stage 3, rank", rank)
-#Encode texts
-codes = comm.bcast(codes, root=0)
-encoded_text = None
-if rank != 0:
-	encoded_text = get_encoded_text(data, codes)
-
-#print("stage 4, rank", rank)
-encoded_texts = comm.gather(encoded_text, root=0)
-if rank == 0:
-	merged_encoded_text = ""
-	for i in range(1, size): 
-		merged_encoded_text += encoded_texts[i]
-	padded_encoded_text = hc.pad_encoded_text(merged_encoded_text)
-
-	b = hc.get_byte_array(padded_encoded_text)
-	b2 = pickle.dumps(reverse_mapping)
-	b3 = len(b2)
-	b4 = b3.to_bytes(4, sys.byteorder)
-	b5 = str.encode(input_file_extension)
-	b6 = len(b5)
-	b7 = b6.to_bytes(4, sys.byteorder)
+	if rank == 0:
+		merged_encoded_text = ""
+		for i in range(1, size): 
+			merged_encoded_text += encoded_text_list[i]
+		padded_encoded_text = hc.pad_encoded_text(merged_encoded_text)
+		b = hc.get_byte_array(padded_encoded_text)
+		b2 = pickle.dumps(reverse_mapping)
+		b3 = len(b2)
+		b4 = b3.to_bytes(4, sys.byteorder)
+		b5 = str.encode(input_file_extension)
+		b6 = len(b5)
+		b7 = b6.to_bytes(4, sys.byteorder)
+		with open(output_path, 'wb') as output_file:
+			output_file.write(b7)
+			output_file.write(b5)
+			output_file.write(b4)
+			output_file.write(b2)
+			output_file.write(bytes(b))
+		et = time.time()
+		ft = et-st
+		print(ft)
 	
-	with open(output_path, 'wb') as output_file:
-		#writes the file extension length
-		output_file.write(b7)
-
-		#writes the file extension
-		output_file.write(b5)
-
-		#writes the pickled reverse_mapping length
-		output_file.write(b4)
-
-		#writes the pickled reverse_mapping
-		output_file.write(b2)
-
-		#writes the compressed file
-		output_file.write(bytes(b))
-	et = time.time()
-	ft = et-st
-	print(ft)
-	
+if __name__ == "__main__":
+    main()
