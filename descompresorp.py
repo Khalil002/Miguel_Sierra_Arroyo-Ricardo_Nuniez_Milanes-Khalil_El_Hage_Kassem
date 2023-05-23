@@ -67,7 +67,6 @@ class HuffmanDecompressor:
 
 				#Remove padding and decode the text 
 				encoded_text = self.remove_padding(bit_string)
-				
 				decompressed_text = self.decode_text(encoded_text)
 				decompressed_binary = bytes.fromhex(decompressed_text)
 				
@@ -85,7 +84,6 @@ class HuffmanDecompressor:
 		writeVariable = comm.gather(dataReceived, root=0)
 		if rank == 0:
 			#Write the output file
-			
 			with open(self.output_path+output_file_extension, 'wb') as output_file:
 				for i in range(1,size):
 					output_file.write(writeVariable[i])
